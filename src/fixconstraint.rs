@@ -58,9 +58,9 @@ impl Constraint<1> for FixConstraint {
         );
 
         cdot.push(self.cid, 0,
-               p.x.x*p.v.x + 
-               p.x.y*p.v.y + 
-               p.x.z*p.v.z
+               (p.x.x-self.x0)*(p.v.x) + 
+               (p.x.y-self.y0)*(p.v.y) + 
+               (p.x.z-self.z0)*(p.v.z)
         );
     }
 

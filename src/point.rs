@@ -48,7 +48,6 @@ impl Point {
     }
 }
 
-pub fn get_point(mass: Mass, ps: &mut vec::Vec::<Point>) -> usize {
-    ps.push(Point::new(mass, ps.len()));
-    ps.len()-1
+pub fn get_point(mass: Mass, ps: &mut vec::Vec::<Point>) {
+        ps.push(Point::new(mass, ps.len()));
 }
