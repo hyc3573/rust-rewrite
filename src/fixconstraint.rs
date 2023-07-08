@@ -49,7 +49,7 @@ impl Constraint<1> for FixConstraint {
         // Jdot
         jdot.push(self.cid, 3 * p.id, p.v.x);
         jdot.push(self.cid, 3 * p.id + 1, p.v.y);
-        jdot.push(self.cid, 3 * p.id + 1, p.v.z);
+        jdot.push(self.cid, 3 * p.id + 2, p.v.z);
 
         c.push(self.cid, 0,
                0.5*(p.x.x-self.x0)*(p.x.x-self.x0) + 

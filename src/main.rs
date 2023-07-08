@@ -28,34 +28,39 @@ fn main() {
     let mut ps = vec::Vec::<Point>::new();
     get_point(Mass::Mass(1.), &mut ps);
     ps[0].x += na::Vector3::new(2., 2., 2.);
-    get_point(Mass::Mass(1.), &mut ps);
-    ps[1].x += na::Vector3::new(7., 2., 2.);
+    // get_point(Mass::Mass(1.), &mut ps);
+    // ps[1].x += na::Vector3::new(5., 6., 2.);
     let mut c1 = constraint1factory.get::<FixConstraint>([ps[0]]);
     c1.init(2., 2., 2.);
-    let mut c2 = constraint2factory.get::<LinkConstraint>([ps[0], ps[1]]);
-    c2.init(5.);
+    // let mut c2 = constraint2factory.get::<LinkConstraint>([ps[0], ps[1]]);
+    // c2.init(5.);
 
     let c1s: vec::Vec::<Box<dyn Constraint<1>>> = vec!(
         Box::new(c1),
     );
-    let c2s: vec::Vec::<Box<dyn Constraint<2>>> = vec!(
-        Box::new(c2),
-    );
+    // let c2s: vec::Vec::<Box<dyn Constraint<2>>> = vec!(
+    //     Box::new(c2),
+    // );
 
     loop {
         // add external force
-        ps[1].add_force(&na::Vector3::new(1., 1., 1.));
+        ps[0].add_force(&na::Vector3::new(1., 0., 0.));
+        // ps[1].add_force(&na::Vector3::new(1., 0., 0.));
 
-        let mut cinfo = ConstraintInfo::new(ps.len(), cidgen.size());
+        let mut solver = Solver::new(ps.len(), cidgen.size());
 
         for constraint in &c1s {
-            constraint.constraint_info(&ps, &mut cinfo);
+            constraint.constraint_info(&ps, &mut solver);
         }
-        for constraint in &c2s {
-            constraint.constraint_info(&ps, &mut cinfo);
+        // for constraint in &c2s {
+        //     constraint.constraint_info(&ps, &mut cinfo);
+        // }
+
+        for point in &ps {
+            point.point_info(&mut solver);
         }
 
-        let f = cinfo.calculate();
+        let f = solver.calculate();
         pv!(f);
 
 
@@ -64,7 +69,7 @@ fn main() {
             ps[i].integrate(0.1);
         }
 
-        println!("resulting position: {}\nand\n{}", ps[0].x, ps[1].x);
+        println!("resulting position: {}", ps[0].x);
 
         let mut asdf: String = String::new();
         asdf.reserve(2048);

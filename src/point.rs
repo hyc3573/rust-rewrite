@@ -1,7 +1,7 @@
-use std::vec;
 use nalgebra as na;
+use std::vec;
 
-use crate::utils::*;
+use crate::{constraint::Solver, utils::*};
 
 pub enum Mass {
     Mass(Real),
@@ -46,8 +46,24 @@ impl Point {
     pub fn set_force(&mut self, f: &na::Vector3<Real>) {
         self.fsum.copy_from(f);
     }
+
+    pub fn point_info(&self, solver: &mut Solver) {
+        let Solver { j, jdot, c, cdot, invmass, f, v } = solver;
+        
+        invmass.push(3 * self.id, 3 * self.id, self.w);
+        invmass.push(3 * self.id + 1, 3 * self.id + 1, self.w);
+        invmass.push(3 * self.id + 2, 3 * self.id + 2, self.w);
+
+        f.push(3 * self.id, 0, self.fsum.x);
+        f.push(3 * self.id + 1, 0, self.fsum.y);
+        f.push(3 * self.id + 2, 0, self.fsum.z);
+
+        v.push(3 * self.id, 0, self.v.x);
+        v.push(3 * self.id + 1, 0, self.v.y);
+        v.push(3 * self.id + 2, 0, self.v.z);
+    }
 }
 
-pub fn get_point(mass: Mass, ps: &mut vec::Vec::<Point>) {
-        ps.push(Point::new(mass, ps.len()));
+pub fn get_point(mass: Mass, ps: &mut vec::Vec<Point>) {
+    ps.push(Point::new(mass, ps.len()));
 }
