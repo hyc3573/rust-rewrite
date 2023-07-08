@@ -20,6 +20,8 @@ mod linkconstraint;
 use crate::linkconstraint::*;
 
 fn main() {
+    todo!("coomatrix.push이 원래 있던 값을 덮어씌우므로 대안 필요.");
+    
     let cidgen  = Idgen::new();
     let constraint1factory = ConstraintFactory::<1>::new(&cidgen);
     let constraint2factory = ConstraintFactory::<2>::new(&cidgen);
@@ -30,16 +32,21 @@ fn main() {
     ps[0].x += na::Vector3::new(2., 2., 2.);
     get_point(Mass::Mass(1.), &mut ps);
     ps[1].x += na::Vector3::new(7., 2., 2.);
+    get_point(Mass::Mass(1.), &mut ps);
+    ps[2].x += na::Vector3::new(12., 2., 2.);
+
     let mut c1 = constraint1factory.get::<FixConstraint>([ps[0]]);
     c1.init(2., 2., 2.);
     let mut c2 = constraint2factory.get::<LinkConstraint>([ps[0], ps[1]]);
     c2.init(5.);
+    let mut c3 = constraint2factory.get::<LinkConstraint>([ps[1], ps[2]]);
+    c3.init(5.);
 
     let c1s: vec::Vec::<Box<dyn Constraint<1>>> = vec!(
         Box::new(c1),
     );
     let c2s: vec::Vec::<Box<dyn Constraint<2>>> = vec!(
-        Box::new(c2),
+        Box::new(c2), Box::new(c3),
     );
 
     loop {
@@ -61,10 +68,11 @@ fn main() {
 
         for i in 0..ps.len() {
             ps[i].add_force(&na::Vector3::new(f[3*i], f[3*i+1], f[3*i+2]));
+            println!("resulting force: {}", ps[i].fsum);
             ps[i].integrate(0.1);
         }
 
-        println!("resulting position: {}\nand\n{}", ps[0].x, ps[1].x);
+        // println!("resulting position: {}\nand\n{}", ps[0].x, ps[1].x);
 
         let mut asdf: String = String::new();
         asdf.reserve(2048);

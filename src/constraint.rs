@@ -3,44 +3,44 @@ use crate::utils::*;
 use crate::pv;
 
 pub struct ConstraintInfo {
-    j: ns::coo::CooMatrix<Real>,
-    jdot: ns::coo::CooMatrix<Real>,
-    c: ns::coo::CooMatrix<Real>,
-    cdot: ns::coo::CooMatrix<Real>,
-    invmass: ns::coo::CooMatrix<Real>,
-    f: ns::coo::CooMatrix<Real>,
-    v: ns::coo::CooMatrix<Real>,
+    j: ns::csr::CsrMatrix<Real>,
+    jdot: ns::csr::CsrMatrix<Real>,
+    c: ns::csr::CsrMatrix<Real>,
+    cdot: ns::csr::CsrMatrix<Real>,
+    invmass: ns::csr::CsrMatrix<Real>,
+    f: ns::csr::CsrMatrix<Real>,
+    v: ns::csr::CsrMatrix<Real>,
 }
 
 impl ConstraintInfo {
     
     pub fn new(point_n: usize, constraint_n: usize) -> Self
     {
-        type Coo = ns::coo::CooMatrix<Real>;
+        type Csr = ns::csr::CsrMatrix<Real>;
         ConstraintInfo {
-            j: Coo::new(constraint_n, point_n*3),
-            jdot: Coo::new(constraint_n, point_n*3),
-            c: Coo::new(constraint_n, 1),
-            cdot: Coo::new(constraint_n, 1),
-            invmass: Coo::new(point_n*3, point_n*3),
-            f: Coo::new(point_n*3, 1),
-            v: Coo::new(point_n*3, 1),
+            j: Csr::zeros(constraint_n, point_n*3),
+            jdot: Csr::zeros(constraint_n, point_n*3),
+            c: Csr::zeros(constraint_n, 1),
+            cdot: Csr::zeros(constraint_n, 1),
+            invmass: Csr::zeros(point_n*3, point_n*3),
+            f: Csr::zeros(point_n*3, 1),
+            v: Csr::zeros(point_n*3, 1),
         }
     }
 
     pub fn calculate(&self) -> na::DMatrix<Real> {
-        let j = ns::convert::serial::convert_csr_dense(&ns::CsrMatrix::<Real>::from(&self.j));
+        let j = ns::convert::serial::convert_csr_dense(&self.j);
         let jdot =
-            ns::convert::serial::convert_csr_dense(&ns::CsrMatrix::<Real>::from(&self.jdot));
+            ns::convert::serial::convert_csr_dense(&self.jdot);
         let invmass =
-            ns::convert::serial::convert_csr_dense(&ns::CsrMatrix::<Real>::from(&self.invmass));
-        let f = ns::convert::serial::convert_csr_dense(&ns::CsrMatrix::<Real>::from(&self.f));
-        let v = ns::convert::serial::convert_csr_dense(&ns::CsrMatrix::<Real>::from(&self.v));
-        let c = ns::convert::serial::convert_csr_dense(&ns::CsrMatrix::<Real>::from(&self.c));
-        let cdot = ns::convert::serial::convert_csr_dense(&ns::CsrMatrix::<Real>::from(&self.cdot));
+            ns::convert::serial::convert_csr_dense(&self.invmass);
+        let f = ns::convert::serial::convert_csr_dense(&self.f);
+        let v = ns::convert::serial::convert_csr_dense(&self.v);
+        let c = ns::convert::serial::convert_csr_dense(&self.c);
+        let cdot = ns::convert::serial::convert_csr_dense(&self.cdot);
 
         let left = &j * &invmass * &j.transpose();
-        let right = -&jdot * &v - &j * &invmass * &f - 0.1*&c - 0.1*&cdot;
+        let right = -&jdot * &v - &j * &invmass * &f - 5.0*&c - 5.0*&cdot;
         pv!(j, jdot, left, v, f, right, c);
         let lambda = left.try_inverse().unwrap()*right;
         j.transpose()*lambda
@@ -52,10 +52,10 @@ pub trait Constraint<const N: usize> {
     fn jacobian(
         &self,
         points: &[Point],
-        j: &mut ns::coo::CooMatrix<Real>,
-        jdot: &mut ns::coo::CooMatrix<Real>,
-        c: &mut ns::coo::CooMatrix<Real>,
-        cdot: &mut ns::coo::CooMatrix<Real>,
+        j: &mut ns::csr::CsrMatrix<Real>,
+        jdot: &mut ns::csr::CsrMatrix<Real>,
+        c: &mut ns::csr::CsrMatrix<Real>,
+        cdot: &mut ns::csr::CsrMatrix<Real>,
     );
 
     fn point_ids(&self) -> [usize; N];
