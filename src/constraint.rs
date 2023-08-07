@@ -40,9 +40,8 @@ impl Solver {
         let cdot = ns::convert::serial::convert_csr_dense(&ns::CsrMatrix::<Real>::from(&self.cdot));
         let left = &j * &invmass * &j.transpose();
         let leftsize = left.shape().0;
-        // let right = -&jdot * &v - &j * &invmass * &f - 0.0*&c - 0.0*&cdot;
-        let right = -(&j*&invmass*&f);
-        pv!(j, jdot, left, v, f, right, c, invmass);
+        let right = -&jdot * &v - &j * &invmass * &f - 10.0*&c - 0.0*&cdot;
+        // pv!(j, jdot, left, v, f, right, c, invmass);
         let lambda = left.try_inverse().unwrap_or(
             na::DMatrix::<Real>::zeros(leftsize, leftsize)
         )*right;
